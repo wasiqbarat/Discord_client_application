@@ -6,11 +6,15 @@ import java.util.Scanner;
 
 import Client.Client;
 import Exceptions.InvalidInput;
+import Windows.LoggedInWindow;
 import Windows.LoginWindow;
+import Windows.SignUpWindow;
+import Windows.Window;
 import org.json.JSONObject;
 
 public class Console implements Runnable {
     private final Client client;
+
 
     public Console(Client client) {
         this.client = client;
@@ -22,6 +26,7 @@ public class Console implements Runnable {
         System.out.println(" 1. LOGIN\n 2. SIGNUP");
         while (true) {
             try {
+                System.out.println("> ");
                 Scanner scanner = new Scanner(System.in);
                 int input = Integer.parseInt(scanner.nextLine());
                 userInputHandle(input);
@@ -32,34 +37,35 @@ public class Console implements Runnable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println(" 1. LOGIN\n 2. SIGNUP");
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(" 1. LOGIN\n 2. SIGNUP" + "\n----------");
         }
     }
 
     private void userInputHandle(int input) throws Exception {
         switch (input) {
-            case 1:
-                login();
-            case 2:
-                signUp();
-            default:
-                throw new Exception();
+            case 1 -> login();
+            case 2 -> signUp();
+            default -> throw new Exception();
         }
     }
 
     private void login() throws Exception {
-        JSONObject identity = new LoginWindow().action();
+        Window window = new LoginWindow();
+        JSONObject identity = window.action();
         client.sendCommand(identity);
-        getMessage();
     }
+
 
     private void signUp() throws Exception {
-
-    }
-
-
-    public void sendMessage(JSONObject object) {
-
+        JSONObject jsonObject = new SignUpWindow().action();
+        client.sendCommand(jsonObject);
     }
 
 
@@ -67,10 +73,21 @@ public class Console implements Runnable {
         while (client.isConnected()) {
             try {
                 JSONObject jsonObject = client.nonFileDataReceiver();
+                if (jsonObject.getBoolean("exception")) {
+                    System.out.println(jsonObject.getString("cause"));
+                    continue;
+                }
                 switch (jsonObject.getString("method")) {
-                    case "login":
+                    case "signUp" -> {
+                        System.out.println("Successfully signed up.");
+                        LoggedInWindow loggedInWindow = new LoggedInWindow();
+                        JSONObject jsonObject1 = loggedInWindow.action();
+                        client.sendCommand(jsonObject1);
+                    }
+                    case "logIn" -> {
+                        System.out.println("Successfully logged in");
 
-
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();

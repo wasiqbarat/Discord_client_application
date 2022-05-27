@@ -23,6 +23,7 @@ public class Client {
     }
 
 
+
     public byte[] fileReceiver() throws Exception{
 
         byte[] buffer = new byte[50000];

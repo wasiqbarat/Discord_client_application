@@ -5,15 +5,22 @@ import org.json.JSONObject;
 public class LoginWindow extends Window{
 
 
+    public JSONObject loggedIn() {
+        JSONObject jsonObject = new JSONObject();
+
+        return jsonObject;
+    }
+
 
     @Override
     public JSONObject action() {
         System.out.println("------login panel-------");
-        System.out.println("Enter username: ");
+        System.out.print("Enter username: ");
         String userName = scanner.nextLine();
-        System.out.println("Enter password: ");
+        System.out.print("Enter password: ");
         String password = scanner.nextLine();
         JSONObject identity = new JSONObject();
+        identity.put("method", "logIn");
         identity.put("userName", userName);
         identity.put("password", password);
         return identity;
