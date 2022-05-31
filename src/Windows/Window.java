@@ -1,7 +1,6 @@
 package Windows;
-import Users.User;
-import org.json.JSONObject;
 
+import org.json.JSONObject;
 import java.util.Scanner;
 
 public abstract class Window {

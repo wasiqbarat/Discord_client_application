@@ -4,14 +4,6 @@ import org.json.JSONObject;
 
 public class LoginWindow extends Window{
 
-
-    public JSONObject loggedIn() {
-        JSONObject jsonObject = new JSONObject();
-
-        return jsonObject;
-    }
-
-
     @Override
     public JSONObject action() {
         System.out.println("------login panel-------");

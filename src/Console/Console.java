@@ -15,25 +15,26 @@ import org.json.JSONObject;
 public class Console implements Runnable {
     private final Client client;
 
-
     public Console(Client client) {
         this.client = client;
     }
 
     @Override
     public void run() {
-        System.out.println("--------------Discord---------------");
-        System.out.println(" 1. LOGIN\n 2. SIGNUP");
+        System.out.println("---------------------------------------Discord----------------------------------------");
+        System.out.println("""
+                     1. LOGIN
+                     2. SIGNUP
+                      ----------
+                     """);
         while (true) {
             try {
-                System.out.println("> ");
+                System.out.print("> ");
                 Scanner scanner = new Scanner(System.in);
                 int input = Integer.parseInt(scanner.nextLine());
                 userInputHandle(input);
             } catch (InvalidInput e) {
                 System.out.println(e.getMessage());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -44,8 +45,13 @@ public class Console implements Runnable {
                 e.printStackTrace();
             }
 
-            System.out.println(" 1. LOGIN\n 2. SIGNUP" + "\n----------");
+            System.out.println("""
+                     1. LOGIN
+                     2. SIGNUP
+                      ----------
+                     """);
         }
+
     }
 
     private void userInputHandle(int input) throws Exception {
@@ -68,28 +74,48 @@ public class Console implements Runnable {
         client.sendCommand(jsonObject);
     }
 
+    private void loggedIn(JSONObject jsonObject) throws Exception {
+        LoggedInWindow loggedInWindow = new LoggedInWindow();
+        JSONObject userInput = null;
+
+        switch (jsonObject.getString("process")) {
+            case "logIn" -> userInput = loggedInWindow.action();
+            case "friendRequests" -> userInput = loggedInWindow.friendRequests(jsonObject);
+            case "sendFriendRequest" -> userInput = loggedInWindow.sendFriendRequest(jsonObject);
+            //case "friendsList" -> userInput = loggedInWindow.friendsList(jsonObject);
+            //case "createPrivateChat" -> userInput = loggedInWindow.createPrivateChat(jsonObject);
+            //case "blockUser" -> userInput = loggedInWindow.bockUser(jsonObject);
+            //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
+            //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
+            //case "logOut" -> userInput = loggedInWindow.logOut(jsonObject);
+        }
+
+        assert userInput != null;
+        client.sendCommand(userInput);
+    }
 
     public void getMessage() {
         while (client.isConnected()) {
             try {
                 JSONObject jsonObject = client.nonFileDataReceiver();
+
                 if (jsonObject.getBoolean("exception")) {
                     System.out.println(jsonObject.getString("cause"));
                     continue;
                 }
+
                 switch (jsonObject.getString("method")) {
                     case "signUp" -> {
                         System.out.println("Successfully signed up.");
-                        LoggedInWindow loggedInWindow = new LoggedInWindow();
-                        JSONObject jsonObject1 = loggedInWindow.action();
-                        client.sendCommand(jsonObject1);
+                        loggedIn(jsonObject);
                     }
                     case "logIn" -> {
                         System.out.println("Successfully logged in");
-
+                        loggedIn(jsonObject);
                     }
                 }
-            } catch (IOException e) {
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
