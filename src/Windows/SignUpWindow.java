@@ -4,6 +4,11 @@ import org.json.JSONObject;
 
 public class SignUpWindow extends Window{
 
+
+    public SignUpWindow(JSONObject data) {
+        super(data);
+    }
+
     @Override
     public JSONObject action() {
         System.out.println("-------signup---------");
@@ -16,14 +21,17 @@ public class SignUpWindow extends Window{
         System.out.print("Enter your phone: ");
         String phone = scanner.nextLine();
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("method", "signUp");
-        jsonObject.put("userName", userName);
-        jsonObject.put("password", password);
-        jsonObject.put("email", email);
-        jsonObject.put("phone", phone);
+        data.put("method", "signUp");
+        data.put("userName", userName);
+        data.put("password", password);
+        data.put("email", email);
+        data.put("phone", phone);
 
-        return jsonObject;
+        return data;
     }
 
+    @Override
+    public void run() {
+        action();
+    }
 }

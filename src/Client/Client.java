@@ -48,8 +48,8 @@ public class Client {
         dataOutputStream.writeUTF(data.toString());
     }
 
-    public void sendFile(String directory, JSONObject identity) throws IOException {
 
+    public void sendFile(String directory, JSONObject identity) throws IOException {
         dataOutputStream.writeUTF(identity.toString());
         File file = new File(directory);
         FileInputStream inputStream = new FileInputStream(file);

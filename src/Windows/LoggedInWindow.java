@@ -9,6 +9,10 @@ import java.util.Iterator;
 public class LoggedInWindow extends Window {
 
 
+    public LoggedInWindow(JSONObject data) {
+        super(data);
+    }
+
     @Override
     public JSONObject action() {
         JSONObject jsonObject = new JSONObject();
@@ -31,11 +35,6 @@ public class LoggedInWindow extends Window {
             System.out.print("> ");
             int input = Integer.parseInt(scanner.nextLine());
 
-            if (input == 8) {
-                jsonObject.put("method", "logOut");
-                break;
-            }
-
             switch (input) {
                 case 1 -> jsonObject.put("method", "friendRequests");
                 case 2 -> jsonObject.put("method", "sendFriendRequest");
@@ -44,6 +43,7 @@ public class LoggedInWindow extends Window {
                 case 5 -> jsonObject.put("method", "blockUser");
                 case 6 -> jsonObject.put("method", "createServer");
                 case 7 -> jsonObject.put("method", "myServers");
+                case 8 -> jsonObject.put("method", "logOut");
             }
 
             System.out.println("""
@@ -57,7 +57,7 @@ public class LoggedInWindow extends Window {
                     8. Log out
                     ----select by number---""");
         }
-        return jsonObject;
+
     }
 
     public JSONObject friendRequests(JSONObject jsonObject) {
@@ -99,13 +99,13 @@ public class LoggedInWindow extends Window {
             listOrder ++;
         }
 
-        friendRequestsToServer.put("method", "loggedIn");
-        friendRequestsToServer.put("process", "friendRequests");
+        friendRequestsToServer.put("method", "friendRequests");
         friendRequestsToServer.put("confirmedFriends", friendsToConfirm);
         friendRequestsToServer.put("approvedFriends", friendsToApprove);
 
         return friendRequestsToServer;
     }
+
 
     public JSONObject sendFriendRequest(JSONObject jsonObject) {
         JSONArray users = jsonObject.getJSONArray("users");
@@ -150,6 +150,18 @@ public class LoggedInWindow extends Window {
         return friendsToAdd;
     }
 
+    public JSONObject logOut(JSONObject jsonObject) {
+        JSONObject jsonObject1 = new JSONObject();
+        jsonObject1.put("process", "logOut");
+
+        return jsonObject1;
+    }
+
+    @Override
+    public void run() {
+        action();
+    }
+
 
     /*public JSONObject friendsList(JSONObject jsonObject) {
 
@@ -170,5 +182,7 @@ public class LoggedInWindow extends Window {
     public JSONObject logOut(JSONObject jsonObject) {
     }
 */
+
+
 
 }
