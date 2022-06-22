@@ -23,7 +23,6 @@ public class Client {
     }
 
 
-
     public byte[] fileReceiver() throws Exception{
 
         byte[] buffer = new byte[50000];
@@ -77,7 +76,6 @@ public class Client {
             e.printStackTrace();
         }
     }
-
 
     public boolean isConnected() {
         return socket.isConnected();

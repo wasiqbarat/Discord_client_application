@@ -10,7 +10,7 @@ public class SignUpWindow extends Window{
     }
 
     @Override
-    public JSONObject action() {
+    public void action() {
         System.out.println("-------signup---------");
         System.out.print("Enter username: ");
         String userName = scanner.nextLine();
@@ -27,7 +27,7 @@ public class SignUpWindow extends Window{
         data.put("email", email);
         data.put("phone", phone);
 
-        return data;
+        Thread.currentThread().interrupt();
     }
 
     @Override

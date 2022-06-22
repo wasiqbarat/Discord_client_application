@@ -12,5 +12,5 @@ public abstract class Window implements Runnable{
         this.data = data;
     }
 
-    public abstract JSONObject action();
+    public abstract void action();
 }

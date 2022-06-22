@@ -9,7 +9,7 @@ public class LoginWindow extends Window{
     }
 
     @Override
-    public JSONObject action() {
+    public void action() {
         System.out.println("------login panel-------");
         System.out.print("Enter username: ");
         String userName = scanner.nextLine();
@@ -18,7 +18,8 @@ public class LoginWindow extends Window{
         data.put("method", "logIn");
         data.put("userName", userName);
         data.put("password", password);
-        return data;
+
+        Thread.currentThread().interrupt();
     }
 
     @Override

@@ -13,9 +13,25 @@ public class LoggedInWindow extends Window {
         super(data);
     }
 
+
     @Override
-    public JSONObject action() {
-        JSONObject jsonObject = new JSONObject();
+    public void run() {
+
+        switch (data.getString("process")) {
+            case "logIn" -> action();
+            case "friendRequests" -> friendRequests();
+            case "sendFriendRequest" -> sendFriendRequest();
+            //case "friendsList" -> userInput = loggedInWindow.friendsList(jsonObject);
+            //case "createPrivateChat" -> userInput = loggedInWindow.createPrivateChat(jsonObject);
+            //case "blockUser" -> userInput = loggedInWindow.bockUser(jsonObject);
+            //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
+            //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
+        }
+
+    }
+
+    @Override
+    public void action() {
 
         System.out.println("""
                 1. Friend requests
@@ -36,15 +52,35 @@ public class LoggedInWindow extends Window {
             int input = Integer.parseInt(scanner.nextLine());
 
             switch (input) {
-                case 1 -> jsonObject.put("method", "friendRequests");
-                case 2 -> jsonObject.put("method", "sendFriendRequest");
-                case 3 -> jsonObject.put("method", "friendsList");
-                case 4 -> jsonObject.put("method", "createPrivateChat");
-                case 5 -> jsonObject.put("method", "blockUser");
-                case 6 -> jsonObject.put("method", "createServer");
-                case 7 -> jsonObject.put("method", "myServers");
-                case 8 -> jsonObject.put("method", "logOut");
+                case 1 -> {
+                    data.clear();
+                    data.put("method", "friendRequests");
+                }
+                case 2 -> {
+                    data.clear();
+                    data.put("method", "sendFriendRequest");
+                }
+                case 3 -> {
+                    data.clear();
+                    data.put("method", "friendsList");
+                }
+                case 4 -> {
+                    data.put("method", "createPrivateChat");
+                }
+                case 5 -> {
+                    data.put("method", "blockUser");
+                }
+                case 6 -> {
+                    data.put("method", "createServer");
+                }
+                case 7 -> {
+                    data.put("method", "myServers");
+                }
+                case 8 -> {
+                    data.put("method", "logOut");
+                }
             }
+
 
             System.out.println("""
                     1. Friend requests
@@ -60,8 +96,8 @@ public class LoggedInWindow extends Window {
 
     }
 
-    public JSONObject friendRequests(JSONObject jsonObject) {
-        JSONArray friends = jsonObject.getJSONArray("friendRequests");
+    public JSONObject friendRequests() {
+        JSONArray friends = data.getJSONArray("friendRequests");
 
         Iterator<Object> iterator = friends.iterator();
         ArrayList<String> friendsList = new ArrayList<>();
@@ -96,7 +132,7 @@ public class LoggedInWindow extends Window {
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
-            listOrder ++;
+            listOrder++;
         }
 
         friendRequestsToServer.put("method", "friendRequests");
@@ -107,8 +143,8 @@ public class LoggedInWindow extends Window {
     }
 
 
-    public JSONObject sendFriendRequest(JSONObject jsonObject) {
-        JSONArray users = jsonObject.getJSONArray("users");
+    public JSONObject sendFriendRequest() {
+        JSONArray users = data.getJSONArray("users");
 
         Iterator<Object> iterator = users.iterator();
         ArrayList<String> arrayList = new ArrayList<>();
@@ -126,7 +162,7 @@ public class LoggedInWindow extends Window {
 
         for (String userName : arrayList) {
             System.out.println(listOrder + " " + userName);
-            System.out.println(" 1. add \n3. nothing");
+            System.out.println(" 1. add \n3. Suspend");
             try {
                 int input = Integer.parseInt(scanner.nextLine());
                 switch (input) {
@@ -134,7 +170,7 @@ public class LoggedInWindow extends Window {
                         friendsToAdd2.put(userName);
                         System.out.println("friend request send.");
                     }
-                    case 3 -> System.out.println();
+                    case 3 -> System.out.println("Suspended");
                     default -> System.out.println("Invalid input");
                 }
             } catch (NumberFormatException e) {
@@ -143,7 +179,7 @@ public class LoggedInWindow extends Window {
             listOrder++;
         }
 
-        friendsToAdd.put("method" , "loggedIn");
+        friendsToAdd.put("method", "loggedIn");
         friendsToAdd.put("process", "sendFriendRequest");
         friendsToAdd.put("friendsToAdd", friendsToAdd2);
 
@@ -155,11 +191,6 @@ public class LoggedInWindow extends Window {
         jsonObject1.put("process", "logOut");
 
         return jsonObject1;
-    }
-
-    @Override
-    public void run() {
-        action();
     }
 
 
@@ -182,7 +213,6 @@ public class LoggedInWindow extends Window {
     public JSONObject logOut(JSONObject jsonObject) {
     }
 */
-
 
 
 }
