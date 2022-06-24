@@ -12,13 +12,8 @@ import org.json.JSONObject;
 
 public class Console implements Runnable {
     private static Console console = null;
-    private final Responder responder;
-    private final Thread thread;
 
     private Console() throws IOException {
-        responder = Responder.getInstance(this);
-        thread = new Thread(responder);
-        thread.start();
     }
 
     public static Console getInstance() throws IOException {
@@ -83,9 +78,13 @@ public class Console implements Runnable {
             default -> throw new InvalidInput();
         }
 
+        Responder responder = Responder.getInstance(this);
+
+        Thread responderThread = new Thread(responder);
+        responderThread.start();
         responder.sendCommand(data);
 
-        thread.join();
+        responderThread.join();
     }
 
     void loggedIn(JSONObject dataFromServer) throws Exception {
@@ -94,63 +93,21 @@ public class Console implements Runnable {
         loggedInWindow.start();
 
         loggedInWindow.join();
+
+        Responder responder = Responder.getInstance(this);
+        Thread responderThread = new Thread(responder);
+        responderThread.start();
         responder.sendCommand(data);
 
-        thread.join();
+        responderThread.join();
     }
 
-/*
-
-    public void getMessage() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (client.isConnected()) {
-                    try {
-                        JSONObject jsonObject = client.nonFileDataReceiver();
-
-                        if (jsonObject.getBoolean("exception")) {
-                            System.out.println(jsonObject.getString("cause"));
-                            loggedIn(jsonObject);
-                        }
-
-                        switch (jsonObject.getString("method")) {
-                            case "signUp" -> {
-                                System.out.println("Successfully signed up.");
-                                loggedIn(jsonObject);
-                            }
-
-                            case "logIn" -> {
-                                System.out.println("Successfully logged in");
-                                loggedIn(jsonObject);
-                            }
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            }
-        }).start();
-
-    }
-
-*/
 
     public static void main(String[] args) throws IOException {
-        //Client client = new Client(new Socket("localHost", 6060));
-        //Responder responder = new Responder(client);
-        //Console console = new Console(client, responder);
-
-        //Thread thread = new Thread(console);
-        //console.getMessage();
-        //thread.start();
-
         Console console = Console.getInstance();
 
-        Thread thread = new Thread(console);
-        thread.start();
+        Thread consoleThread = new Thread(console);
+        consoleThread.start();
     }
 
 }

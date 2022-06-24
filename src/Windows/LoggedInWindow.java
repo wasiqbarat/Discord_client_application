@@ -1,40 +1,43 @@
 package Windows;
 
+import Console.Console;
+import Console.Responder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class LoggedInWindow extends Window {
+    Responder responder = Responder.getInstance(Console.getInstance());
 
-
-    public LoggedInWindow(JSONObject data) {
+    public LoggedInWindow(JSONObject data) throws IOException {
         super(data);
     }
 
-
     @Override
     public void run() {
-
         switch (data.getString("process")) {
-            case "logIn" -> action();
-            case "friendRequests" -> friendRequests();
+            case "loggedIn" -> action();
+            case "myFriendRequests" -> friendRequests();
             case "sendFriendRequest" -> sendFriendRequest();
             //case "friendsList" -> userInput = loggedInWindow.friendsList(jsonObject);
             //case "createPrivateChat" -> userInput = loggedInWindow.createPrivateChat(jsonObject);
             //case "blockUser" -> userInput = loggedInWindow.bockUser(jsonObject);
             //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
             //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
-        }
 
+
+        }
     }
+
 
     @Override
     public void action() {
 
         System.out.println("""
-                1. Friend requests
+                1. My Friend requests
                 2. Send friend request
                 3. Friends list
                 4. Create private chat
@@ -42,7 +45,7 @@ public class LoggedInWindow extends Window {
                 6. Create a server
                 7. My servers
                 8. Log out
-                ----select by number---""");
+                -------------------------------< select by number >""");
         //include online and offline or status. if a friend got offline it shows
         //if a user blocked you, you can't message to him/her.
         //with manage my servers we can create channels.
@@ -53,15 +56,14 @@ public class LoggedInWindow extends Window {
 
             switch (input) {
                 case 1 -> {
-                    data.clear();
                     data.put("method", "friendRequests");
+                    data.put("process", "myFriendRequests");
                 }
                 case 2 -> {
-                    data.clear();
-                    data.put("method", "sendFriendRequest");
+                    data.put("method", "friendRequests");
+                    data.put("process", "sendFriendRequest");
                 }
                 case 3 -> {
-                    data.clear();
                     data.put("method", "friendsList");
                 }
                 case 4 -> {
@@ -81,9 +83,18 @@ public class LoggedInWindow extends Window {
                 }
             }
 
+            Thread responderThread = new Thread(responder);
+            responderThread.start();
+
+            try {
+                responder.sendCommand(data);
+                responderThread.join();
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
 
             System.out.println("""
-                    1. Friend requests
+                    1. My Friend requests
                     2. Send friend request
                     3. Friends list
                     4. Create private chat
@@ -91,10 +102,12 @@ public class LoggedInWindow extends Window {
                     6. Create a server
                     7. My servers
                     8. Log out
-                    ----select by number---""");
+                    -------------------------------< select by number >""");
         }
 
     }
+
+
 
     public JSONObject friendRequests() {
         JSONArray friends = data.getJSONArray("friendRequests");

@@ -1,7 +1,6 @@
 package Console;
 
 import Client.Client;
-import Windows.LoggedInWindow;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -31,43 +30,41 @@ public class Responder implements Runnable {
     }
 
 
-    private void loggedIn(JSONObject dataFromServer) throws Exception {
-        JSONObject data = new JSONObject();
-        Thread loggedInWindow = new Thread(new LoggedInWindow(dataFromServer));
-        loggedInWindow.start();
-
-        loggedInWindow.join();
-
-        client.sendCommand(dataFromServer);
-
-    }
 
     @Override
     public void run() {
+
         while (client.isConnected()) {
             try {
                 JSONObject jsonObject = client.nonFileDataReceiver();
 
                 if (jsonObject.getBoolean("exception")) {
-                    System.out.println(jsonObject.getString("cause"));
-                    console.loggedIn(jsonObject);
+                    System.err.println(jsonObject.getString("cause"));
+                    Thread.sleep(50);
+                    console.run();
+                    continue;
                 }
 
                 switch (jsonObject.getString("method")) {
                     case "signUp" -> {
-                        System.out.println("Successfully signed up.");
+                        System.out.println("-------------------------------< Successfully signed up >-----------------------------");
                         console.loggedIn(jsonObject);
                     }
 
                     case "logIn" -> {
-                        System.out.println("Successfully logged in");
+                        System.out.println("-------------------------------< Successfully logged in >-----------------------------");
                         console.loggedIn(jsonObject);
                     }
-                }
 
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            if (!client.isConnected()) {
+                System.err.println("Connection Lost!");
+            }
+
         }
 
     }
