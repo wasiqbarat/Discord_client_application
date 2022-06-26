@@ -2,10 +2,12 @@ package Windows;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 public class SignUpWindow extends Window{
 
 
-    public SignUpWindow(JSONObject data) {
+    public SignUpWindow(JSONObject data) throws IOException {
         super(data);
     }
 

@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 public class LoginWindow extends Window{
 
-    public LoginWindow(JSONObject data) {
+    public LoginWindow(JSONObject data){
         super(data);
     }
 
@@ -19,12 +19,10 @@ public class LoginWindow extends Window{
         data.put("userName", userName);
         data.put("password", password);
 
-        Thread.currentThread().interrupt();
     }
 
     @Override
     public void run() {
-        action();
-    }
 
+    }
 }

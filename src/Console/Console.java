@@ -2,7 +2,6 @@ package Console;
 
 import java.io.IOException;
 import java.util.Scanner;
-
 import Exceptions.InvalidInput;
 import Windows.LoggedInWindow;
 import Windows.LoginWindow;
@@ -11,18 +10,11 @@ import org.json.JSONObject;
 
 
 public class Console implements Runnable {
-    private static Console console = null;
+    private final Responder responder;
 
-    private Console() throws IOException {
+    public Console() throws IOException {
+        responder = Responder.getInstance(this);
     }
-
-    public static Console getInstance() throws IOException {
-        if (console == null) {
-            console = new Console();
-        }
-        return console;
-    }
-
 
     @Override
     public void run() {
@@ -40,9 +32,11 @@ public class Console implements Runnable {
                 Scanner scanner = new Scanner(System.in);
                 int input = Integer.parseInt(scanner.nextLine());
                 userInputHandle(input);
+
             } catch (InvalidInput e) {
                 System.err.println(e.getMessage());
             } catch (Exception e) {
+                e.printStackTrace();
                 System.err.println("Please enter correct Number.");
             }
 
@@ -62,50 +56,53 @@ public class Console implements Runnable {
     }
 
     private void userInputHandle(int input) throws Exception {
+
         JSONObject data = new JSONObject();
         switch (input) {
             case 1 -> {
-                Thread loginWindow = new Thread(new LoginWindow(data));
-                loginWindow.start();
-                loginWindow.join();
+                LoginWindow loginWindow = new LoginWindow(data);
+                loginWindow.action();
             }
             case 2 -> {
-                Thread signUpWindow = new Thread(new SignUpWindow(data));
-                signUpWindow.start();
-                signUpWindow.join();
+                SignUpWindow signUpWindow = new SignUpWindow(data);
+                signUpWindow.action();
             }
 
             default -> throw new InvalidInput();
         }
 
-        Responder responder = Responder.getInstance(this);
-
+        //send command to server using responder
         Thread responderThread = new Thread(responder);
         responderThread.start();
-        responder.sendCommand(data);
 
-        responderThread.join();
+        try {
+            responder.sendCommand(data);
+
+            responderThread.join();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
+
 
     void loggedIn(JSONObject dataFromServer) throws Exception {
-        JSONObject data = new JSONObject();
-        Thread loggedInWindow = new Thread(new LoggedInWindow(dataFromServer));
-        loggedInWindow.start();
+        LoggedInWindow loggedInWindow = new LoggedInWindow(dataFromServer);
+        loggedInWindow.run();
 
-        loggedInWindow.join();
+        //when there is no need to send command to sever and want to go to main menu
+        if (dataFromServer.getString("method").equals("loggedIn")) {
+            loggedInWindow.action();
+        }
 
-        Responder responder = Responder.getInstance(this);
-        Thread responderThread = new Thread(responder);
-        responderThread.start();
-        responder.sendCommand(data);
-
-        responderThread.join();
+        responder.sendCommand(dataFromServer);
     }
 
-
+    //main
     public static void main(String[] args) throws IOException {
-        Console console = Console.getInstance();
-
+        //Console console = Console.getInstance();
+        Console console = new Console();
         Thread consoleThread = new Thread(console);
         consoleThread.start();
     }
