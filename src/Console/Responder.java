@@ -66,7 +66,6 @@ public class Responder implements Runnable {
                     case "loggedIn" -> console.loggedIn(jsonObject);
                     case "logOut" -> {
                         System.err.println("......................Logged Out.");
-                        Thread.sleep(50);
                         console.run();
                     }
                 }

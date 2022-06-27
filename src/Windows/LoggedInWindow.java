@@ -21,11 +21,23 @@ public class LoggedInWindow extends Window {
             case "myFriendRequests" -> friendRequests();
             case "sendFriendRequest" -> sendFriendRequest();
             case "friendsList" -> friendsList();
-            //case "createPrivateChat" -> userInput = loggedInWindow.createPrivateChat(jsonObject);
-            //case "blockUser" -> userInput = loggedInWindow.bockUser(jsonObject);
+            case "blockUser" -> blockUser();
+            //
+            case "privateChat" -> privateChat();
+            case "selectFriend" -> selectFriendToChat();
+
             //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
             //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
         }
+
+    }
+
+    private void selectFriendToChat() {
+
+    }
+
+    private void privateChat() {
+
     }
 
 
@@ -37,7 +49,7 @@ public class LoggedInWindow extends Window {
                 2. Send friend request
                 3. Friends list
                 4. Create private chat
-                5. Block a user
+                5. Block or Unblock friends
                 6. Create a server
                 7. My servers
                 8. Log out
@@ -58,16 +70,15 @@ public class LoggedInWindow extends Window {
                 data.put("method", "friendRequests");
                 data.put("process", "sendFriendRequest");
             }
+            case 3 -> data.put("method", "friendsList");
 
-            case 3 -> {
-                data.put("method", "friendsList");
-            }
-            case 4 -> {
-                data.put("method", "privateChat");
-            }
+            case 4 -> data.put("method", "privateChat");
+
             case 5 -> {
                 data.put("method", "blockUser");
+                data.put("process", "blocking");
             }
+
             case 6 -> {
                 data.put("method", "createServer");
             }
@@ -79,8 +90,77 @@ public class LoggedInWindow extends Window {
             }
 
         }
+    }
 
 
+    private void blockUser() {
+        JSONArray friendsList = data.getJSONArray("friendsList");
+
+        System.out.println("----<Select user to block>-------------------------");
+
+        JSONArray applyBlocking = new JSONArray();
+
+        for (Object object : friendsList) {
+            String userName = object.toString().split(" ")[0];
+            String blockStatus = object.toString().split(" ")[1];
+
+            if (blockStatus.equals("true")) {
+                System.out.println("-" + userName + "  " + "(User is blocked)");
+                System.out.println("Do you want to unblock");
+                System.out.println("  1.Yes    2.NO");
+                System.out.print("> ");
+
+                int input = 0;
+
+                try {
+                    input = Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid input.");
+                }
+                switch (input) {
+                    case 1 -> {
+                        applyBlocking.put(userName + " " + false);
+                        System.out.println("Unblocked");
+                    }
+                    case 2 -> {}
+                    case 3 -> System.err.println("Invalid input");
+                }
+                data.put("method", "blockUser");
+                data.put("process", "applyBlocking");
+
+            }
+
+            if (blockStatus.equals("false")) {
+                System.out.println("-" + userName);
+                System.out.println("Do you want to block " + userName + "?");
+                System.out.println("  1.Yes    2.No");
+                System.out.print("> ");
+                int input = 0;
+                try {
+                    input = Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid Input.");
+                }
+                switch (input) {
+                    case 1 -> {
+                        applyBlocking.put(userName + " " + true);
+                        System.out.println("You blocked " + userName);
+                    }
+                    case 2 -> {
+                    }
+                    case 3 -> System.out.println("Invalid input");
+                }
+
+            }
+
+
+        }
+
+        data.put("method", "blockUser");
+        data.put("process", "applyBlocking");
+
+        data.remove("friendsList");
+        data.put("applyBlocking", applyBlocking);
     }
 
     private void friendsList() {
@@ -91,11 +171,12 @@ public class LoggedInWindow extends Window {
             System.out.println(listOrder + ". " + object);
             listOrder++;
         }
-        System.out.println(">> press any key to go to main menu <<");
-        System.out.print(">");
-        String input = scanner.nextLine();
+        System.out.println(">> press any key to go main menu <<");
+        System.out.print("> ");
+        scanner.nextLine();
         data.remove("friendsList");
         data.put("method", "loggedIn");
+        data.put("process", "applyBlocking");
     }
 
     public void friendRequests() {
@@ -145,7 +226,6 @@ public class LoggedInWindow extends Window {
         data.put("approvedRequests", friendsToApprove);
     }
 
-
     public void sendFriendRequest() {
         JSONArray users = data.getJSONArray("users");
 
@@ -185,6 +265,5 @@ public class LoggedInWindow extends Window {
         data.put("friendsToAdd", friendsToAddJsonArray);
 
     }
-
 
 }

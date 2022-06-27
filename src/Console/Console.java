@@ -9,15 +9,29 @@ import Windows.SignUpWindow;
 import org.json.JSONObject;
 
 
-public class Console implements Runnable {
+public class Console {
+    private static Console console = null;
     private final Responder responder;
 
-    public Console() throws IOException {
+
+    private Console() throws IOException {
         responder = Responder.getInstance(this);
+        Thread responderThread = new Thread(responder);
+        responderThread.start();
     }
 
-    @Override
+    public static Console getInstance() throws IOException {
+        if (console == null) {
+            console = new Console();
+        }
+        return console;
+    }
+
     public void run() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ignored) {
+        }
 
         System.out.println("---------------------------------------Discord----------------------------------------");
         System.out.print("""
@@ -26,31 +40,17 @@ public class Console implements Runnable {
                  ----------
                 """);
 
-        while (true) {
-            try {
-                System.out.print("> ");
-                Scanner scanner = new Scanner(System.in);
-                int input = Integer.parseInt(scanner.nextLine());
-                userInputHandle(input);
+        try {
+            System.out.print("> ");
+            Scanner scanner = new Scanner(System.in);
+            int input = Integer.parseInt(scanner.nextLine());
+            userInputHandle(input);
 
-            } catch (InvalidInput e) {
-                System.err.println(e.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Please enter correct Number.");
-            }
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            System.out.print("""
-                    1. LOGIN
-                    2. SIGNUP
-                     ----------
-                    """);
+        } catch (InvalidInput e) {
+            System.err.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.run();
         }
 
     }
@@ -71,19 +71,12 @@ public class Console implements Runnable {
             default -> throw new InvalidInput();
         }
 
-        //send command to server using responder
-        Thread responderThread = new Thread(responder);
-        responderThread.start();
-
         try {
             responder.sendCommand(data);
-
-            responderThread.join();
+            //responderThread.join();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
 
@@ -99,12 +92,12 @@ public class Console implements Runnable {
         responder.sendCommand(dataFromServer);
     }
 
+
     //main
     public static void main(String[] args) throws IOException {
-        //Console console = Console.getInstance();
-        Console console = new Console();
-        Thread consoleThread = new Thread(console);
-        consoleThread.start();
+        Console console = Console.getInstance();
+
+        console.run();
     }
 
 }
