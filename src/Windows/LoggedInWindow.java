@@ -1,5 +1,6 @@
 package Windows;
 
+import Console.Console;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,38 +18,122 @@ public class LoggedInWindow extends Window {
     @Override
     public void run() {
         switch (data.getString("process")) {
-            case "loggedIn" -> action();
+            case "loggedIn", "action" -> action();
             case "myFriendRequests" -> friendRequests();
             case "sendFriendRequest" -> sendFriendRequest();
             case "friendsList" -> friendsList();
             case "blockUser" -> blockUser();
             //
-            case "privateChat" -> privateChat();
-            case "selectFriend" -> selectFriendToChat();
-
+            case "newChat" -> selectFriendToChat();
+            case "myChats" -> myChats();
+            case "chatting" -> Chatting();
+            case "messagesDisplay" -> messagesDisplay();
             //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
             //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
         }
 
     }
 
-    private void selectFriendToChat() {
+    private void messagesDisplay() {
+        JSONArray messages = data.getJSONArray("messages");
 
+        for (Object o : messages) {
+            String message = (String) o;
+            System.out.println(message);
+        }
+
+        System.out.print("Press Enter to main menu: ");
+        scanner.next();
+        data.remove("messages");
+
+        data.put("method", "loggedIn");
     }
 
-    private void privateChat() {
 
+    private void myChats() {
+        JSONArray myMessages = data.getJSONArray("myChats");
+        ArrayList<String> chatFriends = new ArrayList<>();
+
+        System.out.println("Select a chat to show : ");
+
+        int listOrder = 1;
+        for (Object o : myMessages) {
+            chatFriends.add((String) o);
+            System.out.println(listOrder + ". " + o);
+            listOrder++;
+        }
+
+        System.out.print("> ");
+        int input = 0;
+        try {
+            input = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        data.remove("myChats");
+        data.put("method", "chat");
+        data.put("process", "getMessagesWith");
+        data.put("messagesWith", chatFriends.get(input - 1));
+    }
+
+    private void Chatting() {
+        System.err.println("type exit to leave chat.");
+        System.out.println("Enter your message:  (press Enter to send message)");
+        System.out.print("> ");
+        String message = scanner.nextLine();
+
+        if (!message.contains("exit")) {
+            data.put("method", "chat");
+            data.put("message" , message);
+            data.put("process", "chatting");
+        }else {
+            action();
+        }
+    }
+
+
+
+    private void selectFriendToChat() {
+        JSONArray friends = data.getJSONArray("friends");
+        ArrayList<String> friendsArrayList = new ArrayList<>();
+
+        for (Object object : friends) {
+            friendsArrayList.add((String) object);
+        }
+
+        System.out.println("Select Friend to chat: ");
+
+        int listOrder = 1;
+        for (String userName : friendsArrayList) {
+            System.out.println(listOrder + "-" + " " + userName);
+            listOrder++;
+        }
+        System.out.print("> ");
+        int input = Integer.parseInt(scanner.nextLine());
+
+        data.remove("friends");
+
+
+        data.put("friendToChat", friendsArrayList.get(input - 1));
+        data.put("method", "chat");
+        data.put("process", "chatAuthentication");
     }
 
 
     @Override
     public void action() {
+        try {
+            Console.getInstance().newMessage(new JSONObject());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         System.out.println("""
                 1. My Friend requests
                 2. Send friend request
                 3. Friends list
-                4. Create private chat
+                4. Chat
                 5. Block or Unblock friends
                 6. Create a server
                 7. My servers
@@ -59,7 +144,13 @@ public class LoggedInWindow extends Window {
         //with manage my servers we can create channels.
 
         System.out.print("> ");
-        int input = Integer.parseInt(scanner.nextLine());
+        int input = 0;
+
+        try {
+            input = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            action();
+        }
 
         switch (input) {
             case 1 -> {
@@ -72,7 +163,27 @@ public class LoggedInWindow extends Window {
             }
             case 3 -> data.put("method", "friendsList");
 
-            case 4 -> data.put("method", "privateChat");
+            case 4 -> {
+                System.out.println("1. new chat\n2. My chats");
+                System.out.print("> ");
+                int input2 = 0;
+                try {
+                    input2 = Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                switch (input2) {
+                    case 1 -> {
+                        data.put("method", "chat");
+                        data.put("process", "newChat");
+                    }
+                    case 2 -> {
+                        data.put("method", "chat");
+                        data.put("process", "myChats");
+                    }
+                }
+            }
 
             case 5 -> {
                 data.put("method", "blockUser");

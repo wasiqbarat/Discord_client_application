@@ -3,16 +3,19 @@ package Console;
 import Client.Client;
 import org.json.JSONObject;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class Responder implements Runnable {
     private static Responder responder = null;
     private final Client client;
+    private final Socket socket;
     private final Console console;
 
     private Responder(Console console) throws IOException {
         client = new Client(new Socket("localHost", 6060));
+        socket = client.getSocket();
         this.console = console;
     }
 
@@ -31,22 +34,46 @@ public class Responder implements Runnable {
             System.out.println("__________________________________________");
             client.sendCommand(data);
         }
+
     }
 
     @Override
     public void run() {
 
-        while (client.isConnected()) {
+        while (socket.isConnected()) {
             try {
-                JSONObject jsonObject = client.nonFileDataReceiver();
+                String dataFromServer = new DataInputStream(socket.getInputStream()).readUTF();
+                JSONObject jsonObject = new JSONObject(dataFromServer);
 
                 if (jsonObject.getBoolean("exception")) {
-                    System.err.println(jsonObject.getString("cause"));
-                    Thread.sleep(50);
-                    console.run();
-                    continue;
-                }
+                    if (jsonObject.getString("cause").contains("loggedInException")) {
+                        String[] causeSplit = jsonObject.getString("cause").split(" ");
+                        String cause = causeSplit[0] + " " + causeSplit[1] + " " + causeSplit[2];
+                        System.err.println(cause);
 
+                        jsonObject.put("process", "action");
+                        jsonObject.put("method", "loggedIn");
+                        jsonObject.put("exception", false);
+                        jsonObject.remove("cause");
+
+                        Thread.sleep(50);
+
+                        console.loggedIn(jsonObject);
+                        continue;
+
+                    } else {
+                        System.err.println(jsonObject.getString("cause"));
+
+                        jsonObject.put("exception", false);
+                        jsonObject.remove("cause");
+
+                        Thread.sleep(50);
+                        console.run();
+                        continue;
+                    }
+
+
+                }
 
                 System.out.println("________________________received from server___________");
                 System.out.println(jsonObject);
@@ -64,6 +91,9 @@ public class Responder implements Runnable {
                         console.loggedIn(jsonObject);
                     }
                     case "loggedIn" -> console.loggedIn(jsonObject);
+                    case "newMessage" -> {
+                        console.newMessage(jsonObject);
+                    }
                     case "logOut" -> {
                         System.err.println("......................Logged Out.");
                         console.run();
@@ -79,6 +109,5 @@ public class Responder implements Runnable {
             }
 
         }
-
     }
 }

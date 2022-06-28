@@ -35,6 +35,10 @@ public class Client {
     }
 
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     public JSONObject nonFileDataReceiver() throws IOException {
         String dataString = dataInputStream.readUTF();
         JSONObject data = new JSONObject(dataString);

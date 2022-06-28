@@ -13,7 +13,6 @@ public class Console {
     private static Console console = null;
     private final Responder responder;
 
-
     private Console() throws IOException {
         responder = Responder.getInstance(this);
         Thread responderThread = new Thread(responder);
@@ -49,7 +48,7 @@ public class Console {
         } catch (InvalidInput e) {
             System.err.println(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("InvalidInput");
             this.run();
         }
 
@@ -73,9 +72,45 @@ public class Console {
 
         try {
             responder.sendCommand(data);
-            //responderThread.join();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    public void newMessage(JSONObject jsonObject) throws Exception {
+        JSONObject message1 = null;
+
+        if (!jsonObject.isEmpty()) {
+            message1 = jsonObject;
+        }
+
+        if (message1 != null) {
+            System.err.println("......new message...........");
+            System.err.println(message1.getString("sender") + ": " + message1.getString("message"));
+            System.err.println("............................");
+
+            Thread.sleep(50);
+            System.out.println("Do you want to reply: \n1.Yes   2.No");
+            System.out.print("> ");
+
+            int input = 0;
+            try {
+                input = Integer.parseInt(new Scanner(System.in).nextLine());
+
+            } catch (NumberFormatException e) {
+                System.out.println("InvalidInput");
+                message1.put("process", "action");
+                loggedIn(message1);
+            }
+
+            if (input == 1) {
+                message1.put("process", "chatting");
+                message1.put("friendToChat", jsonObject.getString("friendToChat"));
+                message1.put("reply", true);
+                loggedIn(message1);
+            }
+
         }
     }
 
@@ -84,19 +119,12 @@ public class Console {
         LoggedInWindow loggedInWindow = new LoggedInWindow(dataFromServer);
         loggedInWindow.run();
 
-        //when there is no need to send command to sever and want to go to main menu
-        if (dataFromServer.getString("method").equals("loggedIn")) {
-            loggedInWindow.action();
-        }
-
         responder.sendCommand(dataFromServer);
     }
-
 
     //main
     public static void main(String[] args) throws IOException {
         Console console = Console.getInstance();
-
         console.run();
     }
 
