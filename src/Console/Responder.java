@@ -2,11 +2,17 @@ package Console;
 
 import Client.Client;
 import org.json.JSONObject;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+
+/**
+ * Responder class manages received data from server
+ *
+ * @author wasiq
+ * @see Client
+ */
 public class Responder implements Runnable {
     private static Responder responder = null;
     private final Client client;
@@ -37,9 +43,12 @@ public class Responder implements Runnable {
 
     }
 
+
+    /**
+     * run method is waiting for new data from server
+     */
     @Override
     public void run() {
-
         while (socket.isConnected()) {
             try {
                 String dataFromServer = new DataInputStream(socket.getInputStream()).readUTF();
@@ -57,21 +66,19 @@ public class Responder implements Runnable {
                         jsonObject.remove("cause");
 
                         Thread.sleep(50);
-
                         console.loggedIn(jsonObject);
-                        continue;
-
                     } else {
                         System.err.println(jsonObject.getString("cause"));
 
                         jsonObject.put("exception", false);
                         jsonObject.remove("cause");
-
-                        Thread.sleep(50);
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException ignored) {
+                        }
                         console.run();
-                        continue;
                     }
-
+                    continue;
 
                 }
 
@@ -95,17 +102,14 @@ public class Responder implements Runnable {
                         console.newMessage(jsonObject);
                     }
                     case "logOut" -> {
-                        System.err.println("......................Logged Out.");
+                        System.out.println("...Logged Out...");
                         console.run();
                     }
+
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
-            }
-
-            if (!client.isConnected()) {
-                System.err.println("Connection Lost!");
             }
 
         }

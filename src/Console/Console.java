@@ -8,7 +8,15 @@ import Windows.LoginWindow;
 import Windows.SignUpWindow;
 import org.json.JSONObject;
 
-
+/**
+ * Console class manages user interface and windows that open
+ *
+ * @author wasiq
+ * @see Windows.Window
+ * @see SignUpWindow
+ * @see LoginWindow
+ * @see LoggedInWindow
+ */
 public class Console {
     private static Console console = null;
     private final Responder responder;
@@ -32,11 +40,11 @@ public class Console {
         } catch (InterruptedException ignored) {
         }
 
-        System.out.println("---------------------------------------Discord----------------------------------------");
+        System.err.println("......................................Discord.........................................");
         System.out.print("""
                 1. LOGIN
                 2. SIGNUP
-                 ----------
+                 ...........
                 """);
 
         try {
@@ -75,8 +83,8 @@ public class Console {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
 
+    }
 
     public void newMessage(JSONObject jsonObject) throws Exception {
         JSONObject message1 = null;
@@ -110,10 +118,8 @@ public class Console {
                 message1.put("reply", true);
                 loggedIn(message1);
             }
-
         }
     }
-
 
     void loggedIn(JSONObject dataFromServer) throws Exception {
         LoggedInWindow loggedInWindow = new LoggedInWindow(dataFromServer);
@@ -122,7 +128,9 @@ public class Console {
         responder.sendCommand(dataFromServer);
     }
 
-    //main
+    /**
+     * Main method of program
+     */
     public static void main(String[] args) throws IOException {
         Console console = Console.getInstance();
         console.run();

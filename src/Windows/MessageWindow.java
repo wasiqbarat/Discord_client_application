@@ -12,8 +12,4 @@ public class MessageWindow extends Window{
         System.err.println(data);
     }
 
-    @Override
-    public void run() {
-        action();
-    }
 }

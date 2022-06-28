@@ -2,12 +2,10 @@ package Windows;
 
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 public class SignUpWindow extends Window{
 
 
-    public SignUpWindow(JSONObject data) throws IOException {
+    public SignUpWindow(JSONObject data) {
         super(data);
     }
 
@@ -45,11 +43,6 @@ public class SignUpWindow extends Window{
         data.put("phone", phone);
         data.put("status", status);
 
-        Thread.currentThread().interrupt();
     }
 
-    @Override
-    public void run() {
-        action();
-    }
 }

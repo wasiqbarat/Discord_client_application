@@ -1,6 +1,7 @@
 package Windows;
 
 import Console.Console;
+import Exceptions.InvalidInput;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -8,14 +9,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-
+/**
+ * LoggedInWindow is user interface when user log in its account
+ * @author wasiq
+ * @version 1.0
+ */
 public class LoggedInWindow extends Window {
 
     public LoggedInWindow(JSONObject data) throws IOException {
         super(data);
     }
 
-    @Override
+    /**
+     * new data from server that is related to logged in person manages with this method
+     */
+
     public void run() {
         switch (data.getString("process")) {
             case "loggedIn", "action" -> action();
@@ -23,11 +31,11 @@ public class LoggedInWindow extends Window {
             case "sendFriendRequest" -> sendFriendRequest();
             case "friendsList" -> friendsList();
             case "blockUser" -> blockUser();
-            //
             case "newChat" -> selectFriendToChat();
             case "myChats" -> myChats();
             case "chatting" -> Chatting();
             case "messagesDisplay" -> messagesDisplay();
+
             //case "createServer" -> userInput = loggedInWindow.createServer(jsonObject);
             //case "myServers" -> userInput = loggedInWindow.myServers(jsonObject);
         }
@@ -43,10 +51,10 @@ public class LoggedInWindow extends Window {
         }
 
         System.out.print("Press Enter to main menu: ");
-        scanner.next();
+        scanner.nextLine();
         data.remove("messages");
-
         data.put("method", "loggedIn");
+
     }
 
 
@@ -78,12 +86,12 @@ public class LoggedInWindow extends Window {
     }
 
     private void Chatting() {
-        System.err.println("type exit to leave chat.");
+        System.err.println("type (exit) to leave chat.");
         System.out.println("Enter your message:  (press Enter to send message)");
         System.out.print("> ");
         String message = scanner.nextLine();
 
-        if (!message.contains("exit")) {
+        if (!message.equals("exit")) {
             data.put("method", "chat");
             data.put("message" , message);
             data.put("process", "chatting");
@@ -91,7 +99,6 @@ public class LoggedInWindow extends Window {
             action();
         }
     }
-
 
 
     private void selectFriendToChat() {
@@ -123,6 +130,8 @@ public class LoggedInWindow extends Window {
 
     @Override
     public void action() {
+
+        //before go to main menu checks if message received or not
         try {
             Console.getInstance().newMessage(new JSONObject());
         } catch (Exception e) {
@@ -137,7 +146,8 @@ public class LoggedInWindow extends Window {
                 5. Block or Unblock friends
                 6. Create a server
                 7. My servers
-                8. Log out
+                8. Change password
+                9. Log out
                 -------------------------------< select by number >""");
         //include online and offline or status. if a friend got offline it shows
         //if a user blocked you, you can't message to him/her.
@@ -169,8 +179,18 @@ public class LoggedInWindow extends Window {
                 int input2 = 0;
                 try {
                     input2 = Integer.parseInt(scanner.nextLine());
+                    if (input2 > 2) {
+                        throw new InvalidInput();
+                    }
                 } catch (NumberFormatException e) {
-                    e.printStackTrace();
+                    System.err.println("InvalidInput");
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ignored) {
+                    }
+                    run();
+                } catch (InvalidInput e) {
+                    System.err.println(e.getMessage());
                 }
 
                 switch (input2) {
@@ -182,6 +202,16 @@ public class LoggedInWindow extends Window {
                         data.put("method", "chat");
                         data.put("process", "myChats");
                     }
+                    default -> {
+                        System.err.println("InvalidInput.");
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException ignored) {
+                        }
+
+                        run();
+                    }
+
                 }
             }
 
@@ -197,9 +227,34 @@ public class LoggedInWindow extends Window {
                 data.put("method", "myServers");
             }
             case 8 -> {
+                data.put("method", "changePassword");
+                changePassword();
+            }
+            case 9 -> {
                 data.put("method", "logOut");
             }
 
+        }
+    }
+
+    private void changePassword() {
+        System.out.println("ChangePassword: .....................");
+        System.out.print("Enter Old password: ");
+
+        if (scanner.nextLine().equals(data.getString("password"))) {
+            System.out.print("Enter new password: ");
+            String newPassword = scanner.nextLine();
+            System.out.print("Confirm new password: ");
+
+            if (newPassword.equals(scanner.nextLine())) {
+                data.put("newPassword", newPassword);
+            }else {
+                System.out.println("not match.");
+                action();
+            }
+        }else {
+            System.out.println("Invalid password.");
+            action();
         }
     }
 

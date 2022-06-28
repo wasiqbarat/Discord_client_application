@@ -18,11 +18,6 @@ public class LoginWindow extends Window{
         data.put("method", "logIn");
         data.put("userName", userName);
         data.put("password", password);
-
     }
 
-    @Override
-    public void run() {
-
-    }
 }

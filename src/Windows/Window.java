@@ -3,7 +3,16 @@ package Windows;
 import org.json.JSONObject;
 import java.util.Scanner;
 
-public abstract class Window implements Runnable{
+/**
+ * Window class provide user interface
+ *
+ * @author wasiq
+ *
+ * @see SignUpWindow
+ * @see LoginWindow
+ * @see LoggedInWindow
+ */
+public abstract class Window {
     protected static Scanner scanner;
     protected JSONObject data;
 
