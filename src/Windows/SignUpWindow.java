@@ -42,7 +42,6 @@ public class SignUpWindow extends Window{
         data.put("email", email);
         data.put("phone", phone);
         data.put("status", status);
-
     }
 
 }

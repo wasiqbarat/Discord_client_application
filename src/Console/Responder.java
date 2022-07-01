@@ -2,6 +2,7 @@ package Console;
 
 import Client.Client;
 import org.json.JSONObject;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -67,6 +68,13 @@ public class Responder implements Runnable {
 
                         Thread.sleep(50);
                         console.loggedIn(jsonObject);
+                    } else if (jsonObject.getString("cause").contains("permission")) {
+                        jsonObject.put("method", "loggedIn");
+                        jsonObject.put("process", "serverPanel");
+                        System.out.println(jsonObject.getString("cause"));
+                        jsonObject.put("exception", false);
+                        jsonObject.remove("cause");
+                        console.loggedIn(jsonObject);
                     } else {
                         System.err.println(jsonObject.getString("cause"));
 
@@ -105,9 +113,7 @@ public class Responder implements Runnable {
                         System.out.println("...Logged Out...");
                         console.run();
                     }
-
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
