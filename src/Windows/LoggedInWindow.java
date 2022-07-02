@@ -1,11 +1,10 @@
 package Windows;
 
 import Console.Console;
+import Console.Responder;
 import Exceptions.InvalidInput;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -43,7 +42,109 @@ public class LoggedInWindow extends Window {
             case "panelForCreatingChannel" -> panelForCreatingNewChannel();
             case "channelPanel" -> channelPanel();
             case "serverChannelsPanel" -> serverChannelsPanel();
+            case "displayPinnedMessage" -> displayPinnedMessage();
+            case "displayChannelMessages" -> displayChannelMessages();
+            case "reactToMessage" -> reactToMessage();
+            case "pinMessage" -> displayMessagesToPin();
         }
+    }
+
+    private void displayMessagesToPin() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+        data.remove("messages");
+
+        System.out.println("....Select message for pin......");
+        int listOrder = 1;
+        for (Object o : messages) {
+            System.out.println(listOrder + ". " +o);
+        }
+        System.out.println(".........");
+        System.out.print("> ");
+        int input = Integer.parseInt(scanner.nextLine());
+
+        String messageForPin = messages.getString(input - 1);
+
+        data.put("messageForPin", messageForPin);
+
+        data.put("method", "server");
+        data.put("process", "applyPinMessage");
+
+    }
+
+    private void reactToMessage() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+
+        System.out.println("....Select message for reaction......");
+        int listOrder = 1;
+        for (Object o : messages) {
+            System.out.println(listOrder + ". " +o);
+        }
+        System.out.println(".........");
+        System.out.print("> ");
+        int input = Integer.parseInt(scanner.nextLine());
+
+        String messageToReact = messages.getString(input - 1);
+        System.out.println("1. Like    2. DisLike    3.HaHa");
+        System.out.print("> ");
+        int input2 = Integer.parseInt(scanner.nextLine());
+        switch (input2) {
+            case 1 -> data.put("reaction", "like");
+            case 2 -> data.put("reaction", "disLike");
+            case 3 -> data.put("reaction", "haha");
+        }
+        data.put("messageForReaction", messageToReact);
+
+        data.put("method", "server");
+        data.put("process", "applyReaction");
+
+    }
+
+    private void displayChannelMessages() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+
+        System.out.println("......" + data.getString("channelName") + " messages history........");
+        for (Object o : messages) {
+            System.out.println(o);
+        }
+        System.out.println("............................");
+        System.out.print("Press enter to back main menu...");
+        scanner.nextLine();
+
+        data.remove("messages");
+        data.put("method", "loggedIn");
+        data.put("process", "channelPanel");
+    }
+
+    private void displayPinnedMessage() {
+        String pinnedMessage = data.getString("pinnedMessage");
+        if (pinnedMessage.isEmpty() || pinnedMessage.contains("empty")) {
+            data.remove("pinnedMessage");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+        }
+        System.out.println("..............");
+        System.out.println("pinned message: " + pinnedMessage);
+        System.out.println("..............");
+        data.put("method", "loggedIn");
+        data.put("process", "channelPanel");
     }
 
     private void serverChannelsPanel() {
@@ -110,9 +211,12 @@ public class LoggedInWindow extends Window {
 
     @Override
     public void action() {
-        //before go to main menu checks if new message received or not
+
+        //before go to menu checks if new message received or not
         try {
-            Console.getInstance().newMessage(new JSONObject());
+            Responder.getInstance(Console.getInstance()).getNewChannelMessages();
+            Responder.getInstance(Console.getInstance()).getOlderPrivateMessages();
+            Responder.getInstance(Console.getInstance()).newMessage(new JSONObject());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -358,6 +462,7 @@ public class LoggedInWindow extends Window {
 
         data.remove("friends");
 
+        data.remove("roles");
         data.put("role", roles.get(input2 - 1));
         data.put("friendToAdd", friends.get(input - 1));
         data.put("method", "server");
@@ -421,7 +526,8 @@ public class LoggedInWindow extends Window {
         data.put("messagesWith", chatFriends.get(input - 1));
     }
 
-    private void Chatting() {
+    private void Chatting(){
+
         System.err.println("type (exit) to leave chat.");
         System.out.println("Enter your message:  (press Enter to send message)");
         System.out.print("> ");

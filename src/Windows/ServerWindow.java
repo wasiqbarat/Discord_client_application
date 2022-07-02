@@ -1,7 +1,11 @@
 package Windows;
 
+import Console.Console;
+import Console.Responder;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class ServerWindow extends Window {
     public ServerWindow(JSONObject data) {
@@ -10,6 +14,16 @@ public class ServerWindow extends Window {
 
     @Override
     public void action() {
+
+        //before go to menu checks if new message received or not
+        try {
+            Responder.getInstance(Console.getInstance()).getNewChannelMessages();
+            Responder.getInstance(Console.getInstance()).getOlderPrivateMessages();
+            Responder.getInstance(Console.getInstance()).newMessage(new JSONObject());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         System.out.println("......................Server Panel......................");
         System.out.println("""
                   1. Add member
