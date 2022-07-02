@@ -2,8 +2,8 @@ package Console;
 
 import Client.Client;
 import org.json.JSONObject;
-import java.io.DataInputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -20,8 +20,8 @@ public class Responder implements Runnable {
     private final Client client;
     private final Socket socket;
     private final Console console;
-    private ArrayList<String> privateMessages;
-    private ArrayList<String> channelMessages;
+    private final ArrayList<String> privateMessages;
+    private final ArrayList<String> channelMessages;
 
     private Responder(Console console) throws IOException {
         client = new Client(new Socket("localHost", 6060));
@@ -41,12 +41,14 @@ public class Responder implements Runnable {
 
     public void sendCommand(JSONObject data) throws IOException {
         synchronized (data) {
-            System.out.println("_________send to server___________________");
+
+            //if you want to see data that sends to server, uncomment this section
+/*            System.out.println("_________data to server___________________");
             System.out.println(data);
-            System.out.println("__________________________________________");
+            System.out.println("__________________________________________");*/
+
             client.sendCommand(data);
         }
-
     }
 
 
@@ -60,6 +62,9 @@ public class Responder implements Runnable {
                 String dataFromServer = new DataInputStream(socket.getInputStream()).readUTF();
                 JSONObject jsonObject = new JSONObject(dataFromServer);
 
+                //if server responds an exception
+                //exceptions may be various
+                //after exceptions we need to open various panels for user interface
                 if (jsonObject.getBoolean("exception")) {
                     if (jsonObject.getString("cause").contains("loggedInException")) {
                         String[] causeSplit = jsonObject.getString("cause").split(" ");
@@ -96,9 +101,11 @@ public class Responder implements Runnable {
 
                 }
 
-                System.out.println("________________________received from server___________");
+                // if you want to know see data that came from server, uncomment this section
+
+        /*        System.out.println("________________________received from server___________");
                 System.out.println(jsonObject);
-                System.out.println("_______________________________________________________");
+                System.out.println("_______________________________________________________");*/
 
 
                 switch (jsonObject.getString("method")) {
@@ -112,12 +119,8 @@ public class Responder implements Runnable {
                         console.loggedIn(jsonObject);
                     }
                     case "loggedIn" -> console.loggedIn(jsonObject);
-                    case "newMessage" -> {
-                        newMessage(jsonObject);
-                    }
-                    case "channelMessage" -> {
-                        newChannelMessage(jsonObject);
-                    }
+                    case "newMessage" -> newMessage(jsonObject);
+                    case "channelMessage" -> newChannelMessage(jsonObject);
                     case "logOut" -> {
                         System.out.println("...Logged Out...");
                         console.run();
@@ -130,9 +133,7 @@ public class Responder implements Runnable {
         }
     }
 
-    private void newPrivateMessage(JSONObject jsonObject) {
-        privateMessages.add(jsonObject.getString("sender") + ": " + jsonObject.getString("message"));
-    }
+
     public void getOlderPrivateMessages() {
         if (privateMessages.isEmpty()) {
             return;
@@ -150,7 +151,6 @@ public class Responder implements Runnable {
     }
 
     public void getNewChannelMessages() throws InterruptedException {
-
         if (channelMessages.isEmpty()) {
             return;
         }
@@ -164,6 +164,7 @@ public class Responder implements Runnable {
         System.out.println("..........Go to channel for chatting..........");
         System.out.println("..............................................");
     }
+
 
     public void newMessage(JSONObject jsonObject) throws Exception {
         JSONObject message1 = null;
@@ -196,9 +197,38 @@ public class Responder implements Runnable {
                 message1.put("reply", true);
                 console.loggedIn(message1);
             }
+        }
+    }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
+
+    private void sendFile(JSONObject dataFromServer) {
+        try {
+            Socket socket = responder.getSocket();
+            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+
+            System.out.print("Enter file directory: ");
+            String directory = new Scanner(System.in).nextLine();
+            outputStream.writeUTF(dataFromServer.toString());
+
+            File file = new File(directory);
+            FileInputStream inputStream = new FileInputStream(file);
+            byte[] buffer = new byte[6000];
+
+            outputStream.writeLong(file.length());
+            while (inputStream.read(buffer) > 0) {
+                outputStream.write(buffer);
+            }
+            outputStream.close();
+            inputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-
     }
+
 }

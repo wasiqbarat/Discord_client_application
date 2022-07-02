@@ -21,7 +21,7 @@ public class LoggedInWindow extends Window {
     }
 
     /**
-     * new data from server that is related to logged in person manages with this method
+     * new data from server that is related to already logged in person manages with this method
      */
     public void run() {
         switch (data.getString("process")) {
@@ -49,169 +49,9 @@ public class LoggedInWindow extends Window {
         }
     }
 
-    private void displayMessagesToPin() {
-        JSONArray messages = data.getJSONArray("messages");
-        if (messages.isEmpty()) {
-            System.out.println("No messages to show");
-            data.put("method", "loggedIn");
-            data.put("process", "channelPanel");
-            return;
-        }
-        data.remove("messages");
-
-        System.out.println("....Select message for pin......");
-        int listOrder = 1;
-        for (Object o : messages) {
-            System.out.println(listOrder + ". " +o);
-        }
-        System.out.println(".........");
-        System.out.print("> ");
-        int input = Integer.parseInt(scanner.nextLine());
-
-        String messageForPin = messages.getString(input - 1);
-
-        data.put("messageForPin", messageForPin);
-
-        data.put("method", "server");
-        data.put("process", "applyPinMessage");
-
-    }
-
-    private void reactToMessage() {
-        JSONArray messages = data.getJSONArray("messages");
-        if (messages.isEmpty()) {
-            System.out.println("No messages to show");
-            data.put("method", "loggedIn");
-            data.put("process", "channelPanel");
-            return;
-        }
-
-        System.out.println("....Select message for reaction......");
-        int listOrder = 1;
-        for (Object o : messages) {
-            System.out.println(listOrder + ". " +o);
-        }
-        System.out.println(".........");
-        System.out.print("> ");
-        int input = Integer.parseInt(scanner.nextLine());
-
-        String messageToReact = messages.getString(input - 1);
-        System.out.println("1. Like    2. DisLike    3.HaHa");
-        System.out.print("> ");
-        int input2 = Integer.parseInt(scanner.nextLine());
-        switch (input2) {
-            case 1 -> data.put("reaction", "like");
-            case 2 -> data.put("reaction", "disLike");
-            case 3 -> data.put("reaction", "haha");
-        }
-        data.put("messageForReaction", messageToReact);
-
-        data.put("method", "server");
-        data.put("process", "applyReaction");
-
-    }
-
-    private void displayChannelMessages() {
-        JSONArray messages = data.getJSONArray("messages");
-        if (messages.isEmpty()) {
-            System.out.println("No messages to show");
-            data.put("method", "loggedIn");
-            data.put("process", "channelPanel");
-            return;
-        }
-
-        System.out.println("......" + data.getString("channelName") + " messages history........");
-        for (Object o : messages) {
-            System.out.println(o);
-        }
-        System.out.println("............................");
-        System.out.print("Press enter to back main menu...");
-        scanner.nextLine();
-
-        data.remove("messages");
-        data.put("method", "loggedIn");
-        data.put("process", "channelPanel");
-    }
-
-    private void displayPinnedMessage() {
-        String pinnedMessage = data.getString("pinnedMessage");
-        if (pinnedMessage.isEmpty() || pinnedMessage.contains("empty")) {
-            data.remove("pinnedMessage");
-            data.put("method", "loggedIn");
-            data.put("process", "channelPanel");
-        }
-        System.out.println("..............");
-        System.out.println("pinned message: " + pinnedMessage);
-        System.out.println("..............");
-        data.put("method", "loggedIn");
-        data.put("process", "channelPanel");
-    }
-
-    private void serverChannelsPanel() {
-        JSONArray channels = data.getJSONArray("channels");
-        if (channels.isEmpty()) {
-            System.out.println("No channels to show");
-            data.remove("channels");
-            serverPanel();
-            return;
-        }
-
-        System.out.println("............" + data.getString("serverName") + " channels" + "............");
-        int listOrder = 1;
-        for (Object o : channels) {
-            System.out.println(listOrder + ". " + o);
-        }
-
-        System.out.println(".............");
-        System.out.print("> ");
-
-        try {
-            int input = Integer.parseInt(scanner.nextLine());
-            if (input < 1 || input > channels.length()) {
-                throw new Exception();
-            }
-            data.put("channelName", channels.get(input - 1));
-        } catch (Exception e) {
-            System.out.println("Invalid input");
-            chooseServer();
-        }
-
-        data.remove("channels");
-        data.put("method", "server");
-        data.put("process", "channelPanel");
-    }
-
-    private void panelForCreatingNewChannel() {
-        System.out.println(".................Creating new channel..................");
-        System.out.print("Enter channel name: ");
-        String channelName = scanner.nextLine();
-        System.out.println("Select channel type: ");
-        System.out.println("1. Text Channel\n2. Voice channel");
-        try {
-            System.out.println("..........");
-            System.out.print("> ");
-            int input = Integer.parseInt(scanner.nextLine());
-            switch (input) {
-                case 1 -> data.put("channelType", "text");
-                case 2 -> data.put("channelType", "voice");
-                default -> {
-                    throw new Exception();
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("invalid Input");
-            panelForCreatingNewChannel();
-        }
-
-        data.put("channelName", channelName);
-        data.put("method", "server");
-        data.put("process", "applyCreatingChannel");
-    }
-
 
     @Override
     public void action() {
-
         //before go to menu checks if new message received or not
         try {
             Responder.getInstance(Console.getInstance()).getNewChannelMessages();
@@ -304,6 +144,145 @@ public class LoggedInWindow extends Window {
             }
             case 9 -> data.put("method", "logOut");
         }
+
+    }
+
+    private void Chatting(){
+        System.err.println("type (exit) to leave chat.");
+        System.out.println("Enter your message:  (press Enter to send message)");
+        System.out.print("> ");
+        String message = scanner.nextLine();
+
+        if (message.equals("exit")) {
+            action();
+        }else if (message.equals("send file")) {
+            data.put("method", "chat");
+            data.put("process", "sendFile");
+        }
+        else {
+            data.put("method", "chat");
+            data.put("message", message);
+            data.put("process", "chatting");
+        }
+
+    }
+
+    private void displayMessagesToPin() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+        data.remove("messages");
+
+        System.out.println("....Select message for pin......");
+        int listOrder = 1;
+        for (Object o : messages) {
+            System.out.println(listOrder + ". " +o);
+        }
+        System.out.println(".........");
+        System.out.print("> ");
+        int input = Integer.parseInt(scanner.nextLine());
+
+        String messageForPin = messages.getString(input - 1);
+
+        data.put("messageForPin", messageForPin);
+
+        data.put("method", "server");
+        data.put("process", "applyPinMessage");
+
+    }
+
+    private void reactToMessage() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+
+        System.out.println("....Select message for reaction......");
+        int listOrder = 1;
+        for (Object o : messages) {
+            System.out.println(listOrder + ". " +o);
+        }
+        System.out.println(".........");
+        System.out.print("> ");
+        int input = Integer.parseInt(scanner.nextLine());
+
+        String messageToReact = messages.getString(input - 1);
+        System.out.println("1. Like    2. DisLike    3.HaHa");
+        System.out.print("> ");
+        int input2 = Integer.parseInt(scanner.nextLine());
+        switch (input2) {
+            case 1 -> data.put("reaction", "like");
+            case 2 -> data.put("reaction", "disLike");
+            case 3 -> data.put("reaction", "haha");
+        }
+        data.put("messageForReaction", messageToReact);
+
+        data.put("method", "server");
+        data.put("process", "applyReaction");
+
+    }
+
+    private void displayChannelMessages() {
+        JSONArray messages = data.getJSONArray("messages");
+        if (messages.isEmpty()) {
+            System.out.println("No messages to show");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+            return;
+        }
+
+        System.out.println("......" + data.getString("channelName") + " messages history........");
+        for (Object o : messages) {
+            System.out.println(o);
+        }
+        System.out.println("............................");
+        System.out.print("Press enter to back main menu...");
+        scanner.nextLine();
+
+        data.remove("messages");
+        data.put("method", "loggedIn");
+        data.put("process", "channelPanel");
+    }
+
+    private void serverChannelsPanel() {
+        JSONArray channels = data.getJSONArray("channels");
+        if (channels.isEmpty()) {
+            System.out.println("No channels to show");
+            data.remove("channels");
+            serverPanel();
+            return;
+        }
+
+        System.out.println("............" + data.getString("serverName") + " channels" + "............");
+        int listOrder = 1;
+        for (Object o : channels) {
+            System.out.println(listOrder + ". " + o);
+        }
+
+        System.out.println(".............");
+        System.out.print("> ");
+
+        try {
+            int input = Integer.parseInt(scanner.nextLine());
+            if (input < 1 || input > channels.length()) {
+                throw new Exception();
+            }
+            data.put("channelName", channels.get(input - 1));
+        } catch (Exception e) {
+            System.out.println("Invalid input");
+            chooseServer();
+        }
+
+        data.remove("channels");
+        data.put("method", "server");
+        data.put("process", "channelPanel");
     }
 
     private void selectUserToRemoveFromServer() {
@@ -335,6 +314,33 @@ public class LoggedInWindow extends Window {
 
         data.put("method", "server");
         data.put("process", "removeMemberFromServer");
+    }
+
+    private void panelForCreatingNewChannel() {
+        System.out.println(".................Creating new channel..................");
+        System.out.print("Enter channel name: ");
+        String channelName = scanner.nextLine();
+        System.out.println("Select channel type: ");
+        System.out.println("1. Text Channel\n2. Voice channel");
+        try {
+            System.out.println("..........");
+            System.out.print("> ");
+            int input = Integer.parseInt(scanner.nextLine());
+            switch (input) {
+                case 1 -> data.put("channelType", "text");
+                case 2 -> data.put("channelType", "voice");
+                default -> {
+                    throw new Exception();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("invalid Input");
+            panelForCreatingNewChannel();
+        }
+
+        data.put("channelName", channelName);
+        data.put("method", "server");
+        data.put("process", "applyCreatingChannel");
     }
 
     private void displayMembersActiveStatus() {
@@ -400,6 +406,20 @@ public class LoggedInWindow extends Window {
     private void channelPanel() {
         ChannelWindow channelPanel = new ChannelWindow(data);
         channelPanel.action();
+    }
+
+    private void displayPinnedMessage() {
+        String pinnedMessage = data.getString("pinnedMessage");
+        if (pinnedMessage.isEmpty() || pinnedMessage.contains("empty")) {
+            data.remove("pinnedMessage");
+            data.put("method", "loggedIn");
+            data.put("process", "channelPanel");
+        }
+        System.out.println("..............");
+        System.out.println("pinned message: " + pinnedMessage);
+        System.out.println("..............");
+        data.put("method", "loggedIn");
+        data.put("process", "channelPanel");
     }
 
     private void serverPanel() {
@@ -526,22 +546,6 @@ public class LoggedInWindow extends Window {
         data.put("messagesWith", chatFriends.get(input - 1));
     }
 
-    private void Chatting(){
-
-        System.err.println("type (exit) to leave chat.");
-        System.out.println("Enter your message:  (press Enter to send message)");
-        System.out.print("> ");
-        String message = scanner.nextLine();
-
-        if (!message.equals("exit")) {
-            data.put("method", "chat");
-            data.put("message", message);
-            data.put("process", "chatting");
-        } else {
-            action();
-        }
-    }
-
     private void selectFriendToChat() {
         JSONArray friends = data.getJSONArray("friends");
         if (friends.isEmpty()) {
@@ -571,6 +575,7 @@ public class LoggedInWindow extends Window {
         data.put("friendToChat", friendsArrayList.get(input - 1));
         data.put("method", "chat");
         data.put("process", "chatAuthentication");
+
     }
 
     private void changePassword() {

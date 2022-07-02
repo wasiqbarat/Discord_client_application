@@ -5,8 +5,6 @@ import Console.Responder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 public class ServerWindow extends Window {
     public ServerWindow(JSONObject data) {
         super(data);
@@ -52,9 +50,7 @@ public class ServerWindow extends Window {
                 data.put("process", "authentication");
                 data.put("action", "removeMember");
             }
-            case 3 -> {
-                data.put("process", "serverChannels");
-            }
+            case 3 -> data.put("process", "serverChannels");
             case 4 -> {
                 data.put("process", "authentication");
                 data.put("action", "createChannel");

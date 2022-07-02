@@ -1,7 +1,7 @@
 package Console;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
+import java.net.Socket;
 import java.util.Scanner;
 import Exceptions.InvalidInput;
 import Windows.LoggedInWindow;
@@ -90,9 +90,37 @@ public class Console {
     void loggedIn(JSONObject dataFromServer) throws Exception {
         LoggedInWindow loggedInWindow = new LoggedInWindow(dataFromServer);
         loggedInWindow.run();
-
+        if (dataFromServer.getString("method").equals("sendFile") ) {
+            sendFile(dataFromServer);
+        }
         responder.sendCommand(dataFromServer);
     }
+
+    private void sendFile(JSONObject dataFromServer) {
+        try {
+            Socket socket = responder.getSocket();
+            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+
+            System.out.print("Enter file directory: ");
+            String directory = new Scanner(System.in).nextLine();
+
+            outputStream.writeUTF(dataFromServer.toString());
+
+            File file = new File(directory);
+            FileInputStream inputStream = new FileInputStream(file);
+            byte[] buffer = new byte[6000];
+
+            outputStream.writeLong(file.length());
+            while (inputStream.read(buffer) > 0) {
+                outputStream.write(buffer);
+            }
+            outputStream.close();
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Main method of program

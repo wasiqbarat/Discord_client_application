@@ -22,15 +22,12 @@ public class Client {
         }
     }
 
-
     public byte[] fileReceiver() throws Exception{
-
         byte[] buffer = new byte[50000];
         int remaining = (int) dataInputStream.readLong();
         while (dataInputStream.available() > 0) {
             dataInputStream.read(buffer, 0, Math.min(buffer.length, remaining));
         }
-
         return buffer;
     }
 
@@ -39,18 +36,9 @@ public class Client {
         return socket;
     }
 
-    public JSONObject nonFileDataReceiver() throws IOException {
-        String dataString = dataInputStream.readUTF();
-        JSONObject data = new JSONObject(dataString);
-
-        return data;
-    }
-
-
     public void sendCommand(JSONObject data) throws IOException {
         dataOutputStream.writeUTF(data.toString());
     }
-
 
     public void sendFile(String directory, JSONObject identity) throws IOException {
         dataOutputStream.writeUTF(identity.toString());
@@ -62,23 +50,6 @@ public class Client {
             dataOutputStream.write(buffer);
         }
 
-    }
-
-    public void closeEveryThing(Socket socket, BufferedWriter bufferedWriter, BufferedReader bufferedReader) {
-        try {
-            if (socket != null) {
-                socket.close();
-            }
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-
-            if (bufferedWriter != null) {
-                bufferedWriter.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public boolean isConnected() {

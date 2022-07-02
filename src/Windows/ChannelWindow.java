@@ -4,7 +4,7 @@ import Console.Console;
 import Console.Responder;
 import org.json.JSONObject;
 
-public class ChannelWindow extends Window{
+public class ChannelWindow extends Window {
     public ChannelWindow(JSONObject data) {
         super(data);
     }
@@ -76,7 +76,6 @@ public class ChannelWindow extends Window{
     private void chatting() {
         System.out.print("Enter you message: ");
         String message = scanner.nextLine();
-
         data.put("message", message);
     }
 
